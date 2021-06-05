@@ -15,7 +15,9 @@ const int pinButton = 12;
 // Resistência do fotoressistor
 const int r1 = 10000;
 // Valor quando o fotoressistor detectar nenhuma luz
-const int darkValue = 1024;
+const float darkValue = 127410;
+// Gamma do fotoressistor
+const float gamma = 0.8582;
 
 // Alterna entre mostrar a temperatura ou a luminosidade no display
 bool showLUX = false;
@@ -48,6 +50,7 @@ void loop() {
 	lux = calcLux(raw);
 	// Lê a temperatura atual
 	temp = readTemp(pinThermR, 10000);
+	Serial.println(raw);
 	
 	// Estado do botão
 	int button = digitalRead(pinButton);
@@ -89,9 +92,10 @@ void displayInfo() {
 
 // Função para calcular a luminosidade a partir de um valor bruto
 float calcLux(float raw) {
-	raw *= 0.001;
-	float rLDR = r1 / ((5.0 / raw) - 1);
-	return pow(darkValue / rLDR, 1.0/0.77);
+	// Converte de 0-1023 para 0v-5v
+	float voltage = raw * (5.0 / 1023.0);
+	float rLDR = r1 / ((5.0 / voltage) - 1);
+	return pow(abs(darkValue / rLDR), 1.0/gamma);
 }
 
 //função que faz leitura da temperatura e retorna o valor em graus celcius
